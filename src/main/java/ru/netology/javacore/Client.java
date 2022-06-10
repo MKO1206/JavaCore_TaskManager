@@ -14,12 +14,16 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
+        start("{ \"type\": \"ADD\", \"task\": \"task #" + pickRandomChar() + "\" }");
+    }
+
+    private static void start(String str) throws IOException {
         try (
-            Socket socket = new Socket("localhost", 8989);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                Socket socket = new Socket("localhost", 8989);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true)
         ) {
-            out.println("{ \"type\": \"ADD\", \"task\": \"task #" + pickRandomChar() + "\" }");
+            out.println(str);
             System.out.println(in.readLine());
         }
     }

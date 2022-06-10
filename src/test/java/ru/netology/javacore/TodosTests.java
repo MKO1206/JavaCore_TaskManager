@@ -2,54 +2,62 @@ package ru.netology.javacore;
 
 import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+class TodosTests {
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-public class TodosTests {
-
-    private Todos todos;
+    private static Todos todos;
+    private static Thread thread;
 
     @BeforeAll
-    public static void startTesting() {
-        System.out.println("Запуск тестов");
+    static void start() {
+        thread = new Thread(TodosTests::setUp);
+        thread.start();
     }
 
     @BeforeEach
-    public void setUp() {
-        System.out.println("Действия перед каждым тестом");
-        String task1 = "Отдых";
-        String task2 = "Пробежка";
-        String task3 = "Работа";
-        Todos.tasks.add(task1);
-        Todos.tasks.add(task2);
-        Todos.tasks.add(task3);
+    private void startEach() {
         todos = new Todos();
     }
 
     @AfterEach
-    public void refresh() {
-       Todos.tasks.clear();
+    private void finishEach() {
+        todos = null;
+    }
+
+    @AfterAll
+    static void finish() {
+        thread.interrupt();
+    }
+
+    private static void setUp() {
+        TodoServer server = new TodoServer(8989, todos);
+        server.start();
     }
 
     @Test
-    public void whenRemoveTask(){
-        todos.removeTask("Работа");
-        ArrayList<String> taskList = todos.getListTask();
-        Assertions.assertEquals(taskList.size(), 2);
+    void addTask() {
+        todos.addTask("Купить кабель");
+        String actual = todos.getListTasks().toString();
+        String expected = "[Купить кабель]";
+        Assertions.assertEquals(expected, actual);
     }
 
     @Test
-    public void whenAddNewTask(){
-        Assertions.assertEquals(todos.getListTask().size(), 3);
-        todos.addTask("Учеба");
-        Assertions.assertEquals(todos.getListTask().size(), 4);
+    void getAllTasks() {
+        todos.addTask("Купить кабель");
+        todos.addTask("Помыть авто");
+        todos.addTask("Выкинуть мусор");
+        String actual = todos.getAllTasks();
+        String expected = "Выкинуть мусор Купить кабель Помыть авто";
+        Assertions.assertEquals(expected, actual);
     }
 
     @Test
-    public void whenGetAllTasks(){
-        String testTaskLIst = "[Отдых, Пробежка, Работа]";
-        assertTrue(todos.getAllTasks().equals(testTaskLIst));
+    void removeTask() {
+        todos.addTask("Купить кабель");
+        todos.addTask("Помыть авто");
+        todos.removeTask("Помыть авто");
+        String actual = todos.getListTasks().toString();
+        String expected = "[Купить кабель]";
+        Assertions.assertEquals(expected, actual);
     }
 }
